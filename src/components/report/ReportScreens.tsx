@@ -6,6 +6,7 @@ import { FadeUp, StaggerContainer, StaggerItem } from '../animations';
 import { getFocusArea, getSleepMsg, getStomachMsg, getCommitMsg, getBeforeItem1, getBeforeItem2, getBeforeItem3, isValidEmail, isValidPhone } from '../../utils';
 import { cn } from '../../utils';
 import { sendLeadToWebhook } from '../offer/PricingScreen';
+import { trackLeadEvent } from '../../utils/pixel';
 
 // ─── Email Gate ───────────────────────────────────────────────────────────────
 export function EmailScreen() {
@@ -21,6 +22,7 @@ export function EmailScreen() {
   const handleSubmit = () => {
     setTouched({ name: true, email: true, phone: true });
     if (allOk) {
+      trackLeadEvent('email', progress);
       sendLeadToWebhook({
         name,
         email,

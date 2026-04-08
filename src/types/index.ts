@@ -1,5 +1,11 @@
 // ─── Global Declarations ────────────────────────────────────────────────────────
 
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+  }
+}
+
 // ─── Quiz Answer State ────────────────────────────────────────────────────────
 export interface SingleAnswers {
   q_gender?: string;
