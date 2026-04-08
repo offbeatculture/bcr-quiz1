@@ -1,3 +1,5 @@
+// ─── Global Declarations ────────────────────────────────────────────────────────
+
 // ─── Quiz Answer State ────────────────────────────────────────────────────────
 export interface SingleAnswers {
   q_gender?: string;
