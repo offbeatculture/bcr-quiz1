@@ -200,7 +200,7 @@ export function Report2Screen() {
         {/* Section 1: Protocol */}
         <FadeUp delay={0.04}><Badge className="mb-2">YOUR RESET PROTOCOL</Badge></FadeUp>
         <FadeUp delay={0.08}>
-          <h2 className="font-serif text-lg text-teal-800 mb-3">How the live workshop solves the exact problem your body is stuck in</h2>
+          <h2 className="font-serif text-lg text-teal-800 mb-3">How the workshop solves the exact problem your body is stuck in</h2>
         </FadeUp>
 
         <StaggerContainer delayStart={0.12} stagger={0.07}>

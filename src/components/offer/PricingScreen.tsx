@@ -96,7 +96,7 @@ export function PricingScreen() {
         <div className="bg-teal-50 border-l-4 border-teal-400 rounded-r-2xl p-4 mb-5">
           <p className="text-sm text-teal-800 leading-relaxed">
             <strong>{identityOpener}</strong>, your body is primarily storing{' '}
-            <strong>{zoneMsg}</strong>. The Breath Chakra Reset workshop is a live 2.5-hour session where Dr. Valar guides you through releasing exactly this.
+            <strong>{zoneMsg}</strong>. The Breath Chakra Reset workshop is a 2.5-hour session where Dr. Valar guides you through releasing exactly this.
           </p>
         </div>
       </FadeUp>
@@ -112,8 +112,8 @@ export function PricingScreen() {
           </div>
 
           <div className="mt-2 mb-3">
-            <p className="font-serif text-xl font-semibold text-teal-800">Live Workshop with Dr. Valar</p>
-            <p className="text-xs text-teal-600 mt-0.5">2.5-hour live session — feel the shift in real time</p>
+            <p className="font-serif text-xl font-semibold text-teal-800"> Workshop with Dr. Valar</p>
+            <p className="text-xs text-teal-600 mt-0.5">2.5-hour session — feel the shift in real time</p>
           </div>
 
           {/* Price */}
