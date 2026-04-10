@@ -12,7 +12,7 @@ const RAZORPAY_LINK = 'https://pages.razorpay.com/bcr-quiz-fb';
 // ── Webhook: localhost = test, anything else = production ─────────────────────
 const WEBHOOK_URL = window.location.hostname === 'localhost'
   ? 'https://offbeatn8n.coachswastik.com/webhook-test/bcr-fb1'
-  : 'https://offbeatn8n.coachswastik.com/webhook/bcr-fb1';
+  : '';
 
 export async function sendLeadToWebhook(payload: Record<string, string>) {
   try {
@@ -72,7 +72,7 @@ export function PricingScreen() {
     params.set('utm_campaign', '');
     params.set('utm_content',  '');
     params.set('utm_term',     '');
-    params.set('source',       'Quizfb');
+    params.set('page-source',       'Quizfb');
 
     const url = `${RAZORPAY_LINK}?${params.toString()}`;
 
