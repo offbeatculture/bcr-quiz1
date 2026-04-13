@@ -3,10 +3,45 @@ import { motion } from 'framer-motion';
 import { useQuiz } from '../../state/QuizContext';
 import { TopBar, PrimaryBtn, GhostBtn, Badge } from '../ui';
 import { FadeUp, StaggerContainer, StaggerItem } from '../animations';
-import { getFocusArea, getSleepMsg, getStomachMsg, getCommitMsg, getBeforeItem1, getBeforeItem2, getBeforeItem3, isValidEmail, isValidPhone } from '../../utils';
+import {
+  getFocusArea,
+  getSleepMsg,
+  getStomachMsg,
+  getCommitMsg,
+  getBeforeItem1,
+  getBeforeItem2,
+  getBeforeItem3,
+  isValidEmail,
+  isValidPhone
+} from '../../utils';
 import { cn } from '../../utils';
-import { sendLeadToWebhook } from '../offer/PricingScreen';
 import { trackLeadEvent } from '../../utils/pixel';
+
+// ✅ put your real webhook URL here
+const WEBHOOK_URL = 'https://offbeatn8n.coachswastik.com/webhook/bcr-quiz-leads';
+
+async function sendLeadToWebhook(payload: {
+  name: string;
+  email: string;
+  phone: string;
+  source: string;
+  identity: string;
+  zone: string;
+}) {
+  const res = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to send lead to webhook');
+  }
+
+  return res.text();
+}
 
 // ─── Email Gate ───────────────────────────────────────────────────────────────
 export function EmailScreen() {
@@ -14,24 +49,31 @@ export function EmailScreen() {
   const { name, email, phone } = state.lead;
   const [touched, setTouched] = useState({ name: false, email: false, phone: false });
 
-  const nameOk  = name.trim().length >= 2;
+  const nameOk = name.trim().length >= 2;
   const emailOk = isValidEmail(email);
   const phoneOk = isValidPhone(phone);
-  const allOk   = nameOk && emailOk && phoneOk;
+  const allOk = nameOk && emailOk && phoneOk;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setTouched({ name: true, email: true, phone: true });
-    if (allOk) {
+
+    if (!allOk) return;
+
+    try {
       trackLeadEvent('email', progress);
-      sendLeadToWebhook({
+
+      await sendLeadToWebhook({
         name,
         email,
         phone,
         source: 'quiz-lead-capture',
         identity: state.single.q_identity || '',
-        zone:     state.single.q_zone     || '',
+        zone: state.single.q_zone || '',
       });
+
       next();
+    } catch (error) {
+      console.error('Webhook submission failed:', error);
     }
   };
 
