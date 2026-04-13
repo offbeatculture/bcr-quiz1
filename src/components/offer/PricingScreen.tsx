@@ -9,10 +9,15 @@ import { getIdentityOpener, getZoneMessage, formatTime } from '../../utils';
 // ── Replace with your actual Razorpay payment link ────────────────────────────
 const RAZORPAY_LINK = 'https://pages.razorpay.com/bcr-quiz-fb';
 
+// ── Google Sheet CSV for Date + Time ──────────────────────────────────────────
+const SHEET_CSV =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7k_ibL4l57reSl5_tU-Iy8f8o2u_FpC3Pvjj_38AalAQLxGmFEqcbrLElxub1pso31_ZdukwyIqCI/pub?gid=138894925&single=true&output=csv';
+
 // ── Webhook: localhost = test, anything else = production ─────────────────────
-const WEBHOOK_URL = window.location.hostname === 'localhost'
-  ? 'https://offbeatn8n.coachswastik.com/webhook-test/bcr-fb1'
-  : '';
+const WEBHOOK_URL =
+  window.location.hostname === 'localhost'
+    ? 'https://offbeatn8n.coachswastik.com/webhook-test/bcr-fb1'
+    : '';
 
 export async function sendLeadToWebhook(payload: Record<string, string>) {
   try {
@@ -29,14 +34,45 @@ export async function sendLeadToWebhook(payload: Record<string, string>) {
 export function PricingScreen() {
   const { state, back, progress } = useQuiz();
   const [secs, setSecs] = useState(1199);
+  const [dateText, setDateText] = useState('Date coming soon');
+  const [timeText, setTimeText] = useState('Time coming soon');
 
   useEffect(() => {
     const t = setInterval(() => setSecs((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
   }, []);
 
+  /** Load date + time (Column A + B only) */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(SHEET_CSV, { cache: 'no-store' });
+        const csv = await res.text();
+        const lines = csv.trim().split(/\r?\n/);
+
+        // Row 2 (skip header)
+        const row = lines[1] ?? lines[0] ?? '';
+
+        // Safe CSV split (handles commas inside quotes)
+        const cells =
+          row.match(/("([^"]|"")*"|[^,]+)/g)?.map((c) =>
+            c.trim().replace(/^"|"$/g, '').replace(/""/g, '"')
+          ) ?? [];
+
+        const date = (cells[0] || '').trim(); // Column A
+        const time = (cells[1] || '').trim(); // Column B
+
+        setDateText(date || 'Date coming soon');
+        setTimeText(time || 'Time coming soon');
+      } catch {
+        setDateText('Date coming soon');
+        setTimeText('Time coming soon');
+      }
+    })();
+  }, []);
+
   const identityOpener = getIdentityOpener(state.single.q_identity);
-  const zoneMsg        = getZoneMessage(state.single.q_zone);
+  const zoneMsg = getZoneMessage(state.single.q_zone);
   const { name, email, phone } = state.lead;
 
   const handleBuy = () => {
@@ -45,34 +81,34 @@ export function PricingScreen() {
       name,
       email,
       phone,
-      product:  'bcr-workshop-99',
-      price:    '99',
-      source:   'quiz-funnel',
+      product: 'bcr-workshop-99',
+      price: '99',
+      source: 'quiz-funnel',
       identity: state.single.q_identity || '',
-      zone:     state.single.q_zone     || '',
+      zone: state.single.q_zone || '',
     });
 
     // Map identity → reason string
     const reasonMap: Record<string, string> = {
       overthinker: 'Stress and overthinking',
-      suppressor:  'Unexplained physical symptoms',
-      achiever:    'Burnout and exhaustion',
-      caretaker:   'Emotional fatigue and low energy',
+      suppressor: 'Unexplained physical symptoms',
+      achiever: 'Burnout and exhaustion',
+      caretaker: 'Emotional fatigue and low energy',
     };
     const reason = reasonMap[state.single.q_identity || ''] || '';
 
     // Build Razorpay Payment Page URL — matches exact param format
     const params = new URLSearchParams();
-    if (name)   params.set('name',            name);
-    if (email)  params.set('email',           email);
-    if (phone)  params.set('whatsapp_number', phone);
-    if (reason) params.set('reason',          reason);
-    params.set('utm_source',   '');
-    params.set('utm_medium',   '');
+    if (name) params.set('name', name);
+    if (email) params.set('email', email);
+    if (phone) params.set('whatsapp_number', phone);
+    if (reason) params.set('reason', reason);
+    params.set('utm_source', '');
+    params.set('utm_medium', '');
     params.set('utm_campaign', '');
-    params.set('utm_content',  '');
-    params.set('utm_term',     '');
-    params.set('page-source',       'Quizfb');
+    params.set('utm_content', '');
+    params.set('utm_term', '');
+    params.set('page-source', 'Quizfb');
 
     const url = `${RAZORPAY_LINK}?${params.toString()}`;
 
@@ -96,7 +132,9 @@ export function PricingScreen() {
         <div className="bg-teal-50 border-l-4 border-teal-400 rounded-r-2xl p-4 mb-5">
           <p className="text-sm text-teal-800 leading-relaxed">
             <strong>{identityOpener}</strong>, your body is primarily storing{' '}
-            <strong>{zoneMsg}</strong>. The Breath Chakra Reset workshop is a 2.5-hour session where Dr. Valar guides you through releasing exactly this.
+            <strong>{zoneMsg}</strong>. The Breath Chakra Reset workshop is a
+            2.5-hour session where Dr. Valar guides you through releasing exactly
+            this.
           </p>
         </div>
       </FadeUp>
@@ -112,20 +150,42 @@ export function PricingScreen() {
           </div>
 
           <div className="mt-2 mb-3">
-            <p className="font-serif text-xl font-semibold text-teal-800"> Workshop with Dr. Valar</p>
-            <p className="text-xs text-teal-600 mt-0.5">2.5-hour session — feel the shift in real time</p>
+            <p className="font-serif text-xl font-semibold text-teal-800">
+              {' '}
+              Workshop with Dr. Valar
+            </p>
+            <p className="text-xs text-teal-600 mt-0.5">
+              2.5-hour session — feel the shift in real time
+            </p>
           </div>
 
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-4">
             <span className="font-serif text-5xl font-bold text-teal-800">₹99</span>
             <span className="text-xs text-slate-400 line-through">₹999</span>
-            <span className="text-xs text-teal-600 font-semibold bg-teal-100 px-2 py-0.5 rounded-full">90% off</span>
+            <span className="text-xs text-teal-600 font-semibold bg-teal-100 px-2 py-0.5 rounded-full">
+              90% off
+            </span>
+          </div>
+
+          {/* Date & Time Boxes */}
+          <div className="flex gap-3 mb-5">
+            <div className="flex-1 bg-white border border-teal-200 rounded-xl p-3 text-center shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase mb-1">Date</p>
+              <p className="text-sm font-semibold text-teal-800">{dateText}</p>
+            </div>
+
+            <div className="flex-1 bg-white border border-teal-200 rounded-xl p-3 text-center shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase mb-1">Time</p>
+              <p className="text-sm font-semibold text-teal-800">{timeText}</p>
+            </div>
           </div>
 
           {/* In this session you will */}
           <div className="bg-white/70 rounded-xl p-3 mb-5">
-            <p className="text-xs font-bold text-teal-800 uppercase tracking-wide mb-3">IN THIS SESSION, YOU WILL:</p>
+            <p className="text-xs font-bold text-teal-800 uppercase tracking-wide mb-3">
+              IN THIS SESSION, YOU WILL:
+            </p>
             {[
               'Identify where stress is stored in your body',
               'Experience the 3-Zone Unlock System to release tension from the gut, chest, and muscles',
@@ -174,8 +234,12 @@ export function PricingScreen() {
         {TESTIMONIALS.map((t, i) => (
           <FadeUp key={t.author} delay={0.3 + i * 0.1}>
             <div className="bg-white border border-teal-100 rounded-xl p-3.5 mb-2 shadow-sm">
-              <p className="text-xs text-slate-600 italic leading-relaxed mb-2">"{t.quote}"</p>
-              <p className="text-xs font-semibold text-slate-500">— {t.author}, {t.location}</p>
+              <p className="text-xs text-slate-600 italic leading-relaxed mb-2">
+                "{t.quote}"
+              </p>
+              <p className="text-xs font-semibold text-slate-500">
+                — {t.author}, {t.location}
+              </p>
             </div>
           </FadeUp>
         ))}
