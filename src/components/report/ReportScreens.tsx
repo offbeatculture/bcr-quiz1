@@ -17,8 +17,19 @@ import {
 import { cn } from '../../utils';
 import { trackLeadEvent } from '../../utils/pixel';
 
-// ✅ put your real webhook URL here
 const WEBHOOK_URL = 'https://offbeatn8n.coachswastik.com/webhook/bcr-quiz-leads';
+
+function getUtmParams() {
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    utm_source: params.get('utm_source') || '',
+    utm_medium: params.get('utm_medium') || '',
+    utm_campaign: params.get('utm_campaign') || '',
+    utm_content: params.get('utm_content') || '',
+    utm_term: params.get('utm_term') || '',
+  };
+}
 
 async function sendLeadToWebhook(payload: {
   name: string;
@@ -27,6 +38,11 @@ async function sendLeadToWebhook(payload: {
   source: string;
   identity: string;
   zone: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
 }) {
   const res = await fetch(WEBHOOK_URL, {
     method: 'POST',
@@ -60,6 +76,8 @@ export function EmailScreen() {
     if (!allOk) return;
 
     try {
+      const utms = getUtmParams();
+
       trackLeadEvent('email', progress);
 
       await sendLeadToWebhook({
@@ -69,6 +87,7 @@ export function EmailScreen() {
         source: 'quiz-lead-capture',
         identity: state.single.q_identity || '',
         zone: state.single.q_zone || '',
+        ...utms,
       });
 
       next();
